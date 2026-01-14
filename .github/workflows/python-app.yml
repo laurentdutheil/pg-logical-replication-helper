@@ -38,5 +38,6 @@ jobs:
     - name: commit badges
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
+        branch: 'badges'
         commit_message: 'Apply badges'
         file_pattern: 'junit-badge.svg coverage-badge.svg'
