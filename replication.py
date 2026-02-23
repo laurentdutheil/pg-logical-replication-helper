@@ -20,16 +20,20 @@ class Replication:
             self.primary.create_replication_user()
     
             # Section pre-data
-            self.run_dump_restore_pre()
-    
+            print(f"pg_restore pre begin")
+            with self.primary.execute_dump("pre-data") as dump:
+                self.secondary.execute_pre_data_dump(dump)
+            print(f"run_dump_restore_pre end")
+            
             # Section post-data
-            self.run_dump_restore_post_only_pk()
+            print(f"pg_restore post begin")
+            with self.primary.execute_dump("post-data") as dump:
+                self.secondary.execute_post_data_dump_only_pk(dump)
+            print(f"run_dump_restore_post end")
     
             date_start = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             unique_name = f"{self.primary.db.db_name}_{date_start}"
-    
             self.primary.create_publication(unique_name)
-    
             self.secondary.create_subscription(unique_name)
     
             subscription_name = self.secondary.get_subscription_name(self.primary.db.db_name)
@@ -43,8 +47,10 @@ class Replication:
             self.secondary.disable_subscription(subscription_name)
     
             # Restore post section without primary keys
-            print("Restore post section - without primary key")
-            self.run_dump_restore_post_without_pk()
+            print(f"pg_restore post (without PK) begin")
+            with self.primary.execute_dump("post-data") as dump:
+                self.secondary.execute_post_data_dump_without_pk(dump)
+            print(f"run_dump_restore_post_without_pk end")
     
             # Enable subscription
             self.secondary.enable_subscription(subscription_name)
@@ -55,29 +61,3 @@ class Replication:
             print("No replication running, exiting")
     
         print("end")
-
-    def run_dump_restore_pre(self):
-        print(f"pg_restore pre begin")
-    
-        with self.primary.execute_dump("pre-data") as dump:
-            self.secondary.execute_pre_data_dump(dump)
-    
-        print(f"run_dump_restore_pre end")
-    
-    
-    def run_dump_restore_post_only_pk(self):
-        print(f"pg_restore post begin")
-    
-        with self.primary.execute_dump("post-data") as dump:
-            self.secondary.execute_post_data_dump_only_pk(dump)
-    
-        print(f"run_dump_restore_post end")
-    
-    
-    def run_dump_restore_post_without_pk(self):
-        print(f"pg_restore post (without PK) begin")
-    
-        with self.primary.execute_dump("post-data") as dump:
-            self.secondary.execute_post_data_dump_without_pk(dump)
-    
-        print(f"run_dump_restore_post_without_pk end")
