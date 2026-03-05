@@ -64,7 +64,7 @@ jobs:
     steps:
       - id: gen
         run: |          
-          declare -a pgversion=( 14 15 16 17 )
+          declare -a pgversion=( 14 15 16 17 18 )
           
           include_json=$(
             {
@@ -106,9 +106,9 @@ jobs:
           uv sync --locked --all-extras --dev
           pip install genbadge[tests,coverage]
       - name: Setup PostgreSQL
-        uses: tj-actions/install-postgresql@v3
+        uses: ikalnytskyi/action-setup-postgres@v8
         with:
-          postgresql-version: ${{matrix.secondary}}
+          postgres-version: ${{matrix.secondary}}
       - name: Test with pytest
         env:
           POSTGRES_PRIMARY_VERSION: ${{matrix.primary}}
